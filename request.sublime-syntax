@@ -1,0 +1,69 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+variables:
+  indent: '[A-Za-z_\.][A-Za-z0-9-_]'
+  optionName: '[^:=]+'
+file_extensions:
+  - req
+scope: source.request
+
+contexts:
+  main:
+    # Strings begin and end with quotes, and use backslashes as an escape
+    # character
+    - match: '"'
+      scope: punctuation.definition.string.begin.request
+      push: double_quoted_string
+
+    # Comments begin with a '//' and finish at the end of the line
+    - match: '^//'
+      scope: punctuation.definition.comment.request
+      push: line_comment
+
+    # Keywords are if, else for and while.
+    # Note that blackslashes don't need to be escaped within single quoted
+    # strings in YAML. When using single quoted strings, only single quotes
+    # need to be escaped: this is done by using two single quotes next to each
+    # other.
+    - match: '^(POST|GET|PUT|OPTION|FETCH|HEAD|PATCH)\b(.*)'
+      captures:
+        1: keyword.control.request
+        2: string.unquoted.request
+
+    - match: '^({{optionName}})(\:)(.*)$'
+      captures:
+        1: definition.variable.request
+        2: punctuation.separator.request
+        3: string.unquoted.request
+
+    - match: '^({{optionName}})(=)(.*)$'
+      captures:
+        1: definition.variable.request
+        2: punctuation.separator.request
+        3: string.unquoted.request
+
+    - match: '^--+(raw|kv)?$'
+      scope: punctuation.definition.string.begin.request
+      push: body_start
+      captures:
+        1: keyword.other.request
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.request
+    - match: '\\.'
+      scope: constant.character.escape.request
+    - match: '"'
+      scope: punctuation.definition.string.end.request
+      pop: true
+
+  line_comment:
+    - meta_scope: comment.line.request
+    - match: $
+      pop: true
+
+  body_start:
+    - meta_scope: string.quoted.double.request
+    - match: ^--$
+      scope: punctuation.definition.string.end.request
+      pop: true
