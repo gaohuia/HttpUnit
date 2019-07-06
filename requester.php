@@ -16,14 +16,15 @@ $comment = [
 
 $syntax = [
 	"request" => [
-		$comment,
 		$blank,
+		$comment,
 		[
 			"match" => "#^(GET|POST|PUT|OPTIONS|HEAD|FETCH)\\s*(.*)\n#",
 			"action" => "request"
 		]
 	],
 	"options" => [
+		$blank,
 		$comment,
 		[
 			"match" => "#^.*\n#",
