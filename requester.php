@@ -87,11 +87,7 @@ class Request {
 
 	public function exec()
 	{
-		print_r($this);
-
-
 		$ch = curl_init();
-
 
 		$url = $this->url;
 		if (!empty($this->query)) {
@@ -177,12 +173,22 @@ class Requester {
 		$this->inputFileName = $inputFileName;
 		$this->out = $inputFileName . '.out.txt';
 
+		$defaultConfig = [
+			'debug' => false,
+		];
+
+		$this->config = $defaultConfig;
+
 		$configFile = $projectPath . '/requester.json';
 		if (file_exists($configFile)) {
 			$config = json_decode(file_get_contents($configFile), true);
-			$this->config = $config;
+			$this->config = array_merge($this->config, $config);
 		}
+	}
 
+	public function getConfig($key)
+	{
+		return $this->config[$key];
 	}
 
 	public function newRequest()
@@ -267,7 +273,10 @@ class Requester {
 		$stack = ["main"];
 
 		while ($this->pos < $contentLength) {
-			echo "==Round==\n";
+			if ($this->getConfig('debug')) {
+				echo "==Round==\n";
+			}
+
 			$context = end($stack);
 			foreach ($syntax[$context] as $rule) {
 				if (isset($rule['match'])) {
@@ -277,11 +286,14 @@ class Requester {
 						$consume = strlen($matches[0]);
 						$this->pos += $consume;
 
-						echo "---------------------------INPUT-----------------\n";
-						echo $matches[0];
-						echo "---------------------------END-------------------\n";
-						echo "Call: {$rule['action']} " . implode(',', array_slice($matches, 1));
-						echo "\n";
+						if ($this->getConfig('debug')) {
+							echo "---------------------------INPUT-----------------\n";
+							echo $matches[0];
+							echo "---------------------------END-------------------\n";
+							echo "Call: {$rule['action']} " . implode(',', array_slice($matches, 1));
+							echo "\n";
+						}
+
 						$takeAction = true;
 					}
 				} else {
