@@ -4,210 +4,92 @@ class InputEndException extends Exception {
 
 }
 
-$blank = [
-	"match" => "#^\\s*\n#",
-	"action" => "blank"
-];
+$newline = "^";
+$headerKey = "[\\w\\-_]+";
+$space = "\\s*";
 
 $comment = [
-	"match" => "#\/\/.*?$\n#m",
-	"action" => "comment",
+	"match" => "#{$newline}//([^\n]*)\\n#U",
+	"action" => "setComment",
+];
+
+$blank = [
+	"match" => "#{$newline}\n#",
+	"action" => "setComment",
 ];
 
 $syntax = [
+	"main" => [
+		$blank,
+		$comment,
+		[
+			"match" => "#{$newline}(GET|POST|PUT|OPTIONS|HEAD|FETCH)\\b{$space}(.*)\n#",
+			"action" => "setRequest",
+			"push" => "request",
+		],
+	],
 	"request" => [
 		$blank,
 		$comment,
 		[
-			"match" => "#^(GET|POST|PUT|OPTIONS|HEAD|FETCH)\\s*(.*)\n#",
-			"action" => "request"
-		]
+			"match" => "#{$newline}@({$headerKey}){$space}={$space}(.*)\n#",
+			"action" => "setQuery",
+		],
+		[
+			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*)\n#",
+			"action" => "setHeader",
+		],
+		[
+			"match" => "#{$newline}({$headerKey}){$space}={$space}(.*)\n#",
+			"action"=> "setOption",
+		],
+		[
+			"match" => "#{$newline}--raw?\n(.*)\n--#s",
+			"action" => "setRawBody",
+			"pop" => true,
+		],
+		[
+			"match" => "#{$newline}--\n#",
+			"action" => "startKvBody",
+			"push" => "kvBody",
+			"pop" => true,
+		],
+		[
+			"pop" => true,
+		],
 	],
-	"options" => [
+	"kvBody" => [
 		$blank,
 		$comment,
 		[
-			"match" => "#^.*\n#",
-			"action" => "option"
-		]
-	],
-	"body" => [
-		$comment,
-		$blank,
+			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*)\n#",
+			"action" => "setKv",
+		],
 		[
-			"match" => "#^--(raw|kv)?\n(.*)\n--#s",
-			"action" => "body"
+			"match" => "#{$newline}(--|$)\n#",
+			"action" => "setEndKvBody",
+			"pop" => true,
 		]
 	]
 ];
 
-class Requester {
-	private $inputFileName;
-	private $fp;
-	private $buffer;
-	private $context = 'request';
-	private $pos = 0;
-	private $headers = [];
-	private $method = 'GET';
-	private $url = '';
-	private $body = null;
-	private $options = [];
-	private $query = [];
-	private $config = [];
-	private $out = null;
-
-	public function __construct($inputFileName, $projectPath)
-	{
-		$this->inputFileName = $inputFileName;
-		$this->fp = fopen($this->inputFileName, "r");
-		$this->out = $inputFileName . '.out.txt';
-
-		if (empty($this->fp)) {
-			throw new Exception("Unable to open input file: {$inputFileName}");
-		}
-
-		$configFile = $projectPath . '/requester.json';
-		if (file_exists($configFile)) {
-			$config = json_decode(file_get_contents($configFile), true);
-			$this->config = $config;
-		}
-	}
-
-	public function __destruct()
-	{
-		if (is_resource($this->fp)) {
-			fclose($this->fp);
-		}
-	}
-
-	private function read()
-	{
-		if (!feof($this->fp)) {
-			$this->buffer .= fread($this->fp, 1024);
-		} else {
-			throw new InputEndException();
-		}
-	}
-
-	private function take($length)
-	{
-		$ret = substr($this->buffer, 0, $length);
-		$this->buffer = substr($this->buffer, $length);
-		$this->pos += $length;
-		return $ret;
-	}
-
-	private function readLine()
-	{
-		while (false === $pos = strpos($this->buffer, "\n")) {
-			$this->read();
-		}
-		$line = $this->take($pos+1);
-		return $line;
-	}
-
-	public function blank($match)
-	{
-	}
-
-	public function comment($match)
-	{
-	}
-
-	public function request($match)
-	{
-		$this->method = $match[1];
-		$this->url = $match[2];
-
-		$pattern = "#(http|https)://#i";
-		if (!preg_match($pattern, $this->url)) {
-			if (isset($this->config['baseUrl'])) {
-				$this->url = $this->config['baseUrl'] . $this->url;
-			}
-		}
-
-		$this->context = "options";
-	}
-
-	public function option($match)
-	{
-		$line = rtrim($match[0], " \n");
-		if (empty($line)) {
-			return ;
-		}
-
-		$delimiter = ':';
-		$colon = strpos($line, ":");
-		$equal = strpos($line, '=');
-
-		if ($colon === false || ($equal != false && $equal < $colon)) {
-			$delimiter = "=";
-		}
-
-
-		$segments = explode($delimiter, $line, 2);
-
-		if (count($segments) <= 1) {
-			$this->context = "body";
-			return false;
-		}
-
-		$key = $segments[0];
-		$value = trim($segments[1]);
-
-		if ($delimiter == '=') {
-			if (substr($key, 0, 1) == '@') {
-				$key = substr($key, 1);
-				$this->query[$key] = $value;
-				return ;
-			} else {
-				switch ($key) {
-					case 'timeout':
-						$this->options[CURLOPT_TIMEOUT_MS] = intval($value);
-						break;
-					case 'out':
-						$this->out = $value;
-						break;
-					default:
-						break;
-				}
-
-				return ;
-			}
-		}
-
-		$this->headers[] = "{$key}: {$value}";
-	}
-
-	public function body($match)
-	{
-		$bodyType = $match[1];
-		$body = trim($match[2], " \r\n");
-
-		switch ($bodyType) {
-			case 'kv':
-			case '':
-				$data = [];
-				$rows = explode("\n", $body);
-				foreach ($rows as $row) {
-					if (empty(trim($row))) {
-						continue;
-					}
-
-					$kv = explode(":", $row, 2);
-					$data[$kv[0]] = trim($kv[1] ?? '');
-				}
-				$this->body = http_build_query($data);
-				break;
-			case 'raw':
-			default:
-				$this->body = $body;
-				break;
-		}
-	}
+class Request {
+	public $method = 'GET';
+	public $url;
+	public $headers = [];
+	public $options = [];
+	public $body = '';
+	public $query = [];
+	public $error;
+	public $errno;
+	public $code;
+	public $multipart = false;
 
 	public function exec()
 	{
+		print_r($this);
+
+
 		$ch = curl_init();
 
 
@@ -231,7 +113,11 @@ class Requester {
 		}
 
 		if (!empty($this->body)) {
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
+			if (!$this->multipart && is_array($this->body)) {
+				curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->body));
+			} else {
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $this->body);
+			}
 		}
 
 		if (!empty($this->headers)) {
@@ -253,9 +139,7 @@ class Requester {
 
 		curl_close($ch);
 
-		$out = "";
-
-		$out .= $headerOut;
+		$out = $headerOut;
 
 		$header = substr($result, 0, $headerSize);
 		$body = substr($result, $headerSize);
@@ -277,34 +161,158 @@ class Requester {
 			file_put_contents($this->out, $out);
 		}
 	}
+}
+
+class Requester {
+	private $inputFileName;
+	private $fp;
+	private $buffer;
+	private $config = [];
+	private $out = null;
+	private $pos = 0;
+
+	public function __construct($inputFileName, $projectPath)
+	{
+		$this->buffer = file_get_contents($inputFileName);
+		$this->inputFileName = $inputFileName;
+		$this->out = $inputFileName . '.out.txt';
+
+		$configFile = $projectPath . '/requester.json';
+		if (file_exists($configFile)) {
+			$config = json_decode(file_get_contents($configFile), true);
+			$this->config = $config;
+		}
+
+	}
+
+	public function newRequest()
+	{
+		if (isset($this->request)) {
+			$this->request->exec();
+		}
+
+		$this->request = new Request();
+	}
+
+	public function setRequest($method, $url)
+	{
+		$this->newRequest();
+		$this->request->method = $method;
+		$this->request->url = $url;
+	}
+
+	public function setHeader($key, $value)
+	{
+		$this->request->headers[] = "{$key}: {$value}";
+	}
+
+	public function setOption($key, $value)
+	{
+		switch ($key) {
+			case 'timeout':
+				$this->request->options[CURLOPT_TIMEOUT_MS] = (int)$value;
+				break;
+			
+			default:
+				throw new Exception("Unknow option: {$key}");
+				break;
+		}
+	}
+
+	public function setComment()
+	{
+
+	}
+
+	public function setBlank()
+	{
+
+	}
+
+	public function setQuery($key, $value)
+	{
+		$this->request->query[$key] = $value;
+	}
+
+	public function startKvBody()
+	{
+		$this->request->body = [];
+	}
+
+	public function setKv($key, $value)
+	{
+		if (substr($value, 0, 1) == '@') {
+			$value = substr($value, 1);
+			$value = new CURLFile($value);
+			$this->request->multipart = true;
+		}
+		$this->request->body[$key] = $value;
+	}
+
+	public function setEndKvBody()
+	{
+	}
+
+	public function setRawBody($body)
+	{
+		$this->request->body = $body;
+	}
 
 	public function run()
 	{
 		global $syntax;
-		try {
-			while (true) {
-				$pos1 = $this->pos;
-				foreach ($syntax[$this->context] as $rule) {
-					if (preg_match($rule['match'], $this->buffer, $match)) {
-						$consume = $this->{$rule['action']}($match);
-						if ($consume !== false) {
-							$this->take(strlen($match[0]));
+		$contentLength = strlen($this->buffer);
+		$this->pos = 0;
+
+		$stack = ["main"];
+
+		while ($this->pos < $contentLength) {
+			echo "==Round==\n";
+			$context = end($stack);
+			foreach ($syntax[$context] as $rule) {
+				if (isset($rule['match'])) {
+					$takeAction = false;
+
+					if (preg_match($rule['match'], substr($this->buffer, $this->pos), $matches)) {
+						$consume = strlen($matches[0]);
+						$this->pos += $consume;
+
+						echo "---------------------------INPUT-----------------\n";
+						echo $matches[0];
+						echo "---------------------------END-------------------\n";
+						echo "Call: {$rule['action']} " . implode(',', array_slice($matches, 1));
+						echo "\n";
+						$takeAction = true;
+					}
+				} else {
+					$takeAction = true;
+				}
+
+				if ($takeAction) {
+					if (isset($rule['action'])) {
+						if (is_callable([$this, $rule['action']])) {
+							call_user_func_array([$this, $rule['action']], array_slice($matches, 1));
 						} else {
-							continue 2;
+							throw new Exception("Unknow action: {$rule['action']}");
 						}
 					}
 
-				}
-				$pos2 = $this->pos;
+					if (isset($rule['pop'])) {
+						array_pop($stack);
+					}
 
-				if ($pos1 == $pos2) {
-					$this->read();
+					if (isset($rule['push'])) {
+						$stack[] = $rule['push'];
+					}
+
+					continue 2;
 				}
 			}
-		} catch (InputEndException $e) {
-			$this->exec();
-			return;
+
+			throw new Exception("Bad Syntax, near: " . substr($this->buffer, $this->pos, 30));
 		}
+
+		$this->newRequest();
 	}
 }
 
