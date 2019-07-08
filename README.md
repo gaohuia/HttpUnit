@@ -1,5 +1,5 @@
 # sublime-requester
-Send http request with sublime instead of tools like PostMan
+An alternative of PostMan. No gui, but pretty easy to send http requests in sublime.
 
 <img src="https://raw.githubusercontent.com/gaohuia/sublime-requester/master/gifs/post.gif" />
 
