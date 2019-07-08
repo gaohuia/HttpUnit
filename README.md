@@ -60,6 +60,10 @@ Content-Type: application/json
 * timeout The maximum number of seconds to allow cURL functions to execute.
 
 
+### Dependencies
+
+* PHP 7.0+
+
 ### HOT KEYS
 
 Just press `Command+B` (For Mac) or `Ctrl+B` (For Win) to run your script.
