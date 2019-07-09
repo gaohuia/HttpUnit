@@ -10,12 +10,6 @@ scope: source.request
 
 contexts:
   main:
-    # Strings begin and end with quotes, and use backslashes as an escape
-    # character
-    - match: '"'
-      scope: punctuation.definition.string.begin.request
-      push: double_quoted_string
-
     # Comments begin with a '//' and finish at the end of the line
     - match: '^//'
       scope: punctuation.definition.comment.request
@@ -43,19 +37,13 @@ contexts:
         2: punctuation.separator.request
         3: string.unquoted.request
 
-    - match: '^--+(raw|kv)?$'
-      scope: punctuation.definition.string.begin.request
+    - match: '^--raw$'
+      scope: keyword.control.request
       push: body_start
-      captures:
-        1: keyword.other.request
 
-  double_quoted_string:
-    - meta_scope: string.quoted.double.request
-    - match: '\\.'
-      scope: constant.character.escape.request
-    - match: '"'
-      scope: punctuation.definition.string.end.request
-      pop: true
+    - match: '^--(kv)?$'
+      scope: keyword.control.request
+      push: kvBody
 
   line_comment:
     - meta_scope: comment.line.request
@@ -65,5 +53,17 @@ contexts:
   body_start:
     - meta_scope: string.quoted.double.request
     - match: ^--$
-      scope: punctuation.definition.string.end.request
+      scope: keyword.control.request
+      pop: true
+  kvBody:
+    - match: '^//'
+      scope: punctuation.definition.comment.request
+      push: line_comment
+    - match: '^({{optionName}})(:)(.*)$'
+      captures:
+        1: string.unquoted.request
+        2: punctuation.separator.request
+        3: string.unquoted.request
+    - match: '^--$'
+      scope: keyword.control.request
       pop: true
