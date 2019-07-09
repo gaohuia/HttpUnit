@@ -5,6 +5,7 @@ class InputEndException extends Exception {
 }
 
 $newline = "^";
+$endline = "(\n|$)";
 $headerKey = "[\\w\\-_]+";
 $space = "\\s*";
 
@@ -23,7 +24,7 @@ $syntax = [
 		$blank,
 		$comment,
 		[
-			"match" => "#{$newline}(GET|POST|PUT|OPTIONS|HEAD|FETCH)\\b{$space}(.*)\n#",
+			"match" => "#{$newline}(GET|POST|PUT|OPTIONS|HEAD|FETCH)\\b{$space}(.*){$endline}#",
 			"action" => "setRequest",
 			"push" => "request",
 		],
@@ -32,15 +33,15 @@ $syntax = [
 		$blank,
 		$comment,
 		[
-			"match" => "#{$newline}@({$headerKey}){$space}={$space}(.*)\n#",
+			"match" => "#{$newline}@({$headerKey}){$space}={$space}(.*){$endline}#",
 			"action" => "setOption",
 		],
 		[
-			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*)\n#",
+			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*){$endline}#",
 			"action" => "setHeader",
 		],
 		[
-			"match" => "#{$newline}({$headerKey}){$space}={$space}(.*)\n#",
+			"match" => "#{$newline}({$headerKey}){$space}={$space}(.*){$endline}#",
 			"action"=> "setQuery",
 		],
 		[
@@ -62,7 +63,7 @@ $syntax = [
 		$blank,
 		$comment,
 		[
-			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*)\n#",
+			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*){$endline}#",
 			"action" => "setKv",
 		],
 		[
@@ -119,8 +120,18 @@ class Request {
 			}
 		}
 
+		if (!empty($this->config['user_agent'])) {
+			curl_setopt($ch, CURLOPT_USERAGENT, $this->config['user_agent']);
+		}
+
+		$headers = $this->config['headers'] ?? [];
+
 		if (!empty($this->headers)) {
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $this->headers);
+			$headers = array_merge($headers, $this->headers);
+		}
+
+		if (!empty($headers)) {
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		}
 
 		if (!empty($this->options)) {
@@ -180,6 +191,8 @@ class Requester {
 		'header_out' => 1,
 		'header_in' => 1,
 		'save' => null,
+		'user_agent' => 'Requester/0.1.0',
+		'headers' => [],
 	];
 
 	public function __construct($inputFileName, $projectPath)
@@ -194,7 +207,11 @@ class Requester {
 		$configFile = $projectPath . '/requester.json';
 		if (file_exists($configFile)) {
 			$config = json_decode(file_get_contents($configFile), true);
-			$this->config = array_merge($this->config, $config);
+			if (is_array($config)) {
+				$this->config = array_merge($this->config, $config);
+			} else {
+				die("Invalid requester.json");
+			}
 		}
 	}
 
