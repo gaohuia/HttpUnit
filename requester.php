@@ -66,7 +66,7 @@ $syntax = [
 			"action" => "setKv",
 		],
 		[
-			"match" => "#{$newline}(--|$)\n#",
+			"match" => "#{$newline}(--|$)(\n|$)#",
 			"action" => "setEndKvBody",
 			"pop" => true,
 		]
