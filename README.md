@@ -72,7 +72,7 @@ Example:
 
 ### Valid options
 
-* `@timeout` The maximum number of seconds to allow cURL functions to execute. Default: unlimited
+* `@timeout` The maximum number of milliseconds to allow cURL functions to execute. Default: unlimited
 * `@header_in` 0/1 to control the output of the response header. Default: 1.
 * `@header_out` 0/1 to control the output of the request header. Default: 1.
 
