@@ -3,7 +3,7 @@ An alternative of PostMan. No gui, but pretty easy to send http requests in subl
 
 <img src="https://raw.githubusercontent.com/gaohuia/sublime-requester/master/gifs/post.gif" />
 
-### Sending simple request
+### Send Simple Request
 
 Create a file named with "playground.req". Your can type some instructions in it, like:
 
@@ -56,12 +56,25 @@ Content-Type: application/json
 --
 ```
 
+### Config File
+
+You can build a config file named `requester.json` under the project directory, and put any options in it,  which will be applied to all requests under the project automatically.
+
+Example:
+
+```json
+{
+	"header_in" : 0,
+	"header_out" : 0
+}
+```
+
 
 ### Valid options
 
-* `@timeout` The maximum number of seconds to allow cURL functions to execute.
-* `@header_in` 0/1 to control the output of the response header.
-* `@header_out` 0/1 to control the output of the request header.
+* `@timeout` The maximum number of seconds to allow cURL functions to execute. Default: unlimited
+* `@header_in` 0/1 to control the output of the response header. Default: 1.
+* `@header_out` 0/1 to control the output of the request header. Default: 1.
 
 
 ### Dependencies
