@@ -15,11 +15,13 @@ Create a file named with "playground.req". Your can type some instructions in it
 POST http://test.com/show_post.php
 
 // [optional] query strings
-@act=login
-@controller=user
+act=login
+controller=user
 
-// [optional] request options
-timeout=1000
+// [optional] options
+@timeout=1000
+@header_in=1
+@header_out=0
 
 // [optional] http headers
 Token: hello
@@ -57,7 +59,9 @@ Content-Type: application/json
 
 ### Valid options
 
-* timeout The maximum number of seconds to allow cURL functions to execute.
+* `@timeout` The maximum number of seconds to allow cURL functions to execute.
+* `@header_in` 0/1 to control the output of the response header.
+* `@header_out` 0/1 to control the output of the request header.
 
 
 ### Dependencies

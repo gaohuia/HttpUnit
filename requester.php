@@ -33,7 +33,7 @@ $syntax = [
 		$comment,
 		[
 			"match" => "#{$newline}@({$headerKey}){$space}={$space}(.*)\n#",
-			"action" => "setQuery",
+			"action" => "setOption",
 		],
 		[
 			"match" => "#{$newline}({$headerKey}){$space}:{$space}(.*)\n#",
@@ -41,15 +41,15 @@ $syntax = [
 		],
 		[
 			"match" => "#{$newline}({$headerKey}){$space}={$space}(.*)\n#",
-			"action"=> "setOption",
+			"action"=> "setQuery",
 		],
 		[
-			"match" => "#{$newline}--raw?\n(.*)\n--#s",
+			"match" => "#{$newline}--raw\n(.*)\n--#s",
 			"action" => "setRawBody",
 			"pop" => true,
 		],
 		[
-			"match" => "#{$newline}--\n#",
+			"match" => "#{$newline}--(kv)?\n#",
 			"action" => "startKvBody",
 			"push" => "kvBody",
 			"pop" => true,
@@ -84,6 +84,7 @@ class Request {
 	public $errno;
 	public $code;
 	public $multipart = false;
+	public $config = [];
 
 	public function exec()
 	{
@@ -137,13 +138,18 @@ class Request {
 
 		curl_close($ch);
 
-		$out = $headerOut;
+		$out = '';
+
+		if ($this->config['header_out']) {
+			$out .= $headerOut;
+		}
 
 		$header = substr($result, 0, $headerSize);
 		$body = substr($result, $headerSize);
 		
-		$out .= $header;
-
+		if ($this->config['header_in']) {
+			$out .= $header;
+		}
 
 		$bodyJson = json_decode($body);
 		if ($bodyJson != null) {
@@ -155,8 +161,8 @@ class Request {
 
 		echo $out;
 
-		if (!empty($this->out)) {
-			file_put_contents($this->out, $out);
+		if (!empty($this->config['save'])) {
+			file_put_contents($this->config['save'], $out);
 		}
 	}
 }
@@ -169,17 +175,21 @@ class Requester {
 	private $out = null;
 	private $pos = 0;
 
+	private $defaultConfig = [
+		'debug' => false,
+		'header_out' => 1,
+		'header_in' => 1,
+		'save' => null,
+	];
+
 	public function __construct($inputFileName, $projectPath)
 	{
 		$this->buffer = file_get_contents($inputFileName);
 		$this->inputFileName = $inputFileName;
 		$this->out = $inputFileName . '.out.txt';
 
-		$defaultConfig = [
-			'debug' => false,
-		];
 
-		$this->config = $defaultConfig;
+		$this->config = $this->defaultConfig;
 
 		$configFile = $projectPath . '/requester.json';
 		if (file_exists($configFile)) {
@@ -200,6 +210,7 @@ class Requester {
 		}
 
 		$this->request = new Request();
+		$this->request->config = $this->config;
 	}
 
 	public function setRequest($method, $url)
@@ -216,12 +227,17 @@ class Requester {
 
 	public function setOption($key, $value)
 	{
+		$key=trim($key);
 		switch ($key) {
 			case 'timeout':
 				$this->request->options[CURLOPT_TIMEOUT_MS] = (int)$value;
 				break;
-			
 			default:
+				if (array_key_exists($key, $this->defaultConfig)) {
+					$this->request->config[$key] = $value;
+					break;
+				}
+
 				throw new Exception("Unknow option: {$key}");
 				break;
 		}
