@@ -1,4 +1,4 @@
 {
-	"cmd": ["php", "$packages/requester/requester.php", "$file", "$project_path"],
+	"cmd": ["php", "$packages/SimpleHttpRequester/requester.php", "$file", "$project_path"],
 	"selector" : "source.request"
 }
