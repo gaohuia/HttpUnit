@@ -130,6 +130,8 @@ class Request {
 			$headers = array_merge($headers, $this->headers);
 		}
 
+		$headers[] = "Expect: ";
+
 		if (!empty($headers)) {
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		}
