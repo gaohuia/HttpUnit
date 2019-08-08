@@ -20,7 +20,7 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '^(POST|GET|PUT|OPTION|FETCH|HEAD|PATCH)\b(.*)'
+    - match: '^(POST|GET|PUT|OPTION|FETCH|HEAD|PATCH|CONNECT)\b(.*)'
       captures:
         1: keyword.control.request
         2: string.unquoted.request

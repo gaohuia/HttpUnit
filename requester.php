@@ -24,7 +24,7 @@ $syntax = [
 		$blank,
 		$comment,
 		[
-			"match" => "#{$newline}(GET|POST|PUT|OPTIONS|HEAD|FETCH)\\b{$space}(.*){$endline}#",
+			"match" => "#{$newline}(GET|POST|PUT|OPTIONS|HEAD|PATCH|CONNECT)\\b{$space}(.*){$endline}#",
 			"action" => "setRequest",
 			"push" => "request",
 		],
