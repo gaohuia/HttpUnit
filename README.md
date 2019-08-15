@@ -1,4 +1,4 @@
-# sublime-requester
+# SimpleHttpRequester
 An alternative of PostMan. No gui, but pretty easy to send http requests in sublime.
 
 <img src="https://raw.githubusercontent.com/gaohuia/sublime-requester/master/gifs/post.gif" />
@@ -75,8 +75,8 @@ Example:
 * `@timeout` The maximum number of milliseconds to allow cURL functions to execute. Default: unlimited
 * `@header_in` 0/1 to control the output of the response header. Default: 1.
 * `@header_out` 0/1 to control the output of the request header. Default: 1.
-* `auth` Auth method to use, valid values: basic, digest.
-* `userpwd` User && Pass to use, in format of "user:pass".
+* `@auth` Auth method to use, valid values: basic, digest.
+* `@userpwd` User && Pass to use, in format of "user:pass".
 
 
 ### Dependencies
