@@ -251,6 +251,22 @@ class Requester {
 			case 'timeout':
 				$this->request->options[CURLOPT_TIMEOUT_MS] = (int)$value;
 				break;
+			case 'auth':
+				$authMethods = [
+					'basic' => CURLAUTH_BASIC,
+					'digest' => CURLAUTH_DIGEST,
+				];
+
+				if (!isset($authMethods[$value])) {
+					$validValues = implode(',', array_keys($authMethods));
+					throw new Exception("Unknow auth mehtod: {$value}, support {$validValues} only");
+				}
+
+				$this->request->options[CURLOPT_HTTPAUTH] = $authMethods[$value];
+				break;
+			case 'userpwd':
+				$this->request->options[CURLOPT_USERPWD] = $value;
+				break;
 			default:
 				if (array_key_exists($key, $this->defaultConfig)) {
 					$this->request->config[$key] = $value;
