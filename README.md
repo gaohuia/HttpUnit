@@ -1,5 +1,5 @@
 # SimpleHttpRequester
-An alternative of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/SimpleHttpRequester/wiki) here.
+An alternate of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/SimpleHttpRequester/wiki) here.
 
 <img src="https://raw.githubusercontent.com/gaohuia/sublime-requester/master/gifs/post.gif" />
 
