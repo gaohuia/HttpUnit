@@ -1,5 +1,5 @@
 import urllib.request,os,hashlib,tempfile,zipfile,shutil;
-version = "1.1.0";
+version = "1.1.1";
 name = "SimpleHttpRequester";
 url = "https://github.com/gaohuia/SimpleHttpRequester/archive/v%s.zip" % (version);
 pp = sublime.packages_path();
