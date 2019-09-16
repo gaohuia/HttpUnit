@@ -6,7 +6,7 @@ class InputEndException extends Exception {
 
 $newline = "^";
 $endline = "(\n|$)";
-$headerKey = "[\\w\\-_]+";
+$headerKey = "[\\w\\-_\[\]]+";
 $space = "\\s*";
 
 $comment = [
