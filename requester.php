@@ -6,7 +6,7 @@ class InputEndException extends Exception {
 
 $newline = "^";
 $endline = "(\n|$)";
-$headerKey = "[\\w\\-_\[\]]+";
+$headerKey = "[\\w\\-_\[\]@]+";
 $space = "\\s*";
 
 $comment = [
@@ -374,7 +374,10 @@ class Requester {
                 }
             }
 
-            throw new Exception("Bad Syntax, near: " . substr($this->buffer, $this->pos, 30));
+            $lines = explode("\n", substr($this->buffer, 0, $this->pos));
+            $lineNum = count($lines);
+            $pos = strlen(trim(end($lines))) + 1;
+            throw new Exception("Bad Syntax, near line {$lineNum}:{$pos}\n" . substr($this->buffer, $this->pos, 30));
         }
 
         $this->newRequest();
@@ -385,4 +388,9 @@ $input = $argv[1];
 $projectPath = $argv[2];
 
 $instance = new Requester($input, $projectPath);
-$instance->run();
+try {
+    $instance->run();
+} catch (Exception $e) {
+    echo "Failed to run the request: " . $e->getMessage();
+    exit(1);
+}
