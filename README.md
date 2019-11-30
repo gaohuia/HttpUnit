@@ -3,6 +3,14 @@ An alternate of PostMan. No gui, but pretty easy to send http requests in sublim
 
 ### Install
 
+The simplest way to install HttpUnit would be through the `Package Control`. 
+
+1. Press `Command+Shift+P`, type int "Install Package" and press `Enter`.
+2. Type in "Http Unit" and press `Enter`.
+3. That is all you need to do. Enjoy!
+
+*Alternative Way*:
+
 Press Ctrl+`
 Copy the following code, parst and press enter.
 
