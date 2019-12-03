@@ -29,27 +29,34 @@ Create a file named with "playground.req". Your can type some instructions in it
 // request line:
 POST http://test.com/show_post.php
 
-// [optional] query strings
+// [optional] query strings, will be added to the request line as the query string
 act=login
 controller=user
 
-// [optional] options
+// [optional] options, used to control the behavious of `HttpUnit`
 @timeout=1000
 @header_in=1
 @header_out=0
 
-// [optional] http headers
+// [optional] http headers, will be added to the http header
 Token: hello
 Cookie: sessionid=anysessionid
 
 // [optional] body
+// The following "--" indicates the the beginning of request body
 --
+
 // Simple Kv
 username: gaohuias
 password: 123456
-// File upload
+
+
+// File upload, values start with "@" will be considered as a file path
 image: @/Users/tom/images/2114647.jpeg
 --
+
+// The "--" above indicates the ending of a request
+// The subquent requests can begin from here.
 ```
 
 We can also post some raw data
@@ -64,6 +71,7 @@ POST http://test.com/show_post.php
 Content-Type: application/json
 
 // [optional] body
+// The "--raw" indicates the beginning of the body too. But the content will be put in the http body without any changes.
 --raw
 {
 	"username" : "gaohuia"
