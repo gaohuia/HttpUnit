@@ -87,6 +87,36 @@ class Request {
     public $multipart = false;
     public $config = [];
 
+    // public function onHeader($ch, $header)
+    // {
+    //     echo '--onHeader--', "\n";
+    //     echo $header;
+    //     echo '--onHeader End--', "\n";
+    //     return strlen($header);
+    // }
+
+    private $headerPos = 0;
+    private $headerOutSize = 0;
+
+    public function onWrite($ch, $data) 
+    {
+        $headerOut = curl_getinfo($ch, CURLINFO_HEADER_OUT);
+
+        if ($this->headerPos < strlen($headerOut)) {
+            $new = substr($headerOut, $headerPos);
+            $this->headerPos += strlen($new);
+            echo $new;
+        }
+
+        echo $data;
+        return strlen($data);
+    }
+
+    function onRead($ch, $stream, $size)
+    {
+        echo "onRead";
+    }
+
     public function exec()
     {
         $ch = curl_init();
@@ -100,13 +130,16 @@ class Request {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->method);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
+        curl_setopt($ch, CURLOPT_WRITEFUNCTION, [$this, 'onWrite']);
+        curl_setopt($ch, CURLOPT_VERBOSE, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000*15);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_STDERR, fopen("/dev/null", "a"));
 
         if ($this->method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
@@ -146,37 +179,39 @@ class Request {
             die;
         }
 
-        $headerOut = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        // $headerOut = curl_getinfo($ch, CURLINFO_HEADER_OUT);
+        // $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+
+        // curl_getinfo($ch);
 
         curl_close($ch);
 
-        $out = '';
+        // $out = '';
 
-        if ($this->config['header_out']) {
-            $out .= $headerOut;
-        }
+        // if ($this->config['header_out']) {
+        //     $out .= $headerOut;
+        // }
 
-        $header = substr($result, 0, $headerSize);
-        $body = substr($result, $headerSize);
+        // $header = substr($result, 0, $headerSize);
+        // $body = substr($result, $headerSize);
         
-        if ($this->config['header_in']) {
-            $out .= $header;
-        }
+        // if ($this->config['header_in']) {
+        //     $out .= $header;
+        // }
 
-        $bodyJson = json_decode($body);
-        if ($bodyJson != null) {
-            $body = json_encode($bodyJson, JSON_PRETTY_PRINT);
-        }
+        // $bodyJson = json_decode($body);
+        // if ($bodyJson != null) {
+        //     $body = json_encode($bodyJson, JSON_PRETTY_PRINT);
+        // }
 
-        $out .= $body;
-        $out .= "\n";
+        // $out .= $body;
+        // $out .= "\n";
 
-        echo $out;
+        // echo $out;
 
-        if (!empty($this->config['save'])) {
-            file_put_contents($this->config['save'], $out);
-        }
+        // if (!empty($this->config['save'])) {
+        //     file_put_contents($this->config['save'], $out);
+        // }
     }
 }
 

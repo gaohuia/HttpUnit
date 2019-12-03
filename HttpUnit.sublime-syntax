@@ -6,6 +6,7 @@ variables:
   optionName: '[^:=]+'
 file_extensions:
   - req
+  - http
 scope: source.request
 
 contexts:
