@@ -1,6 +1,13 @@
 # HttpUnit
 An alternate of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/HttpUnit/wiki) here.
 
+# Features
+
+* The syntax is similar to HTTP protocol.
+* Comment supported.
+* Syntax hilight.
+
+
 ### The Simplest Request
 
 Create a file named with "test.req", with content. 
