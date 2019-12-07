@@ -1,7 +1,7 @@
 # HttpUnit
 An alternate of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/HttpUnit/wiki) here.
 
-### Get start
+### The Simplest Request
 
 Create a file named with "test.req", with content. 
 
@@ -11,9 +11,7 @@ GET https://www.google.com/
 
 Save, press `Command+B` or `Ctrl+B` to run to send the request.
 
-### Send Simple Request
-
-Create a file named with "playground.req". Your can type some instructions in it, like:
+### Form Submission/File Upload
 
 ```
 // lines begin with double slashes will be ignored
@@ -52,10 +50,10 @@ image: @/Users/tom/images/2114647.jpeg
 // The subquent requests can begin from here.
 ```
 
-We can also post some raw data
+### Post JSON/Raw Data
 
 ```
-// post-raw
+// post-raw/json
 
 // Request Line:
 POST http://test.com/show_post.php
