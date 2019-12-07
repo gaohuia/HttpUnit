@@ -1,22 +1,15 @@
 # HttpUnit
 An alternate of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/HttpUnit/wiki) here.
 
-### Install
+### Get start
 
-The simplest way to install HttpUnit would be through the `Package Control`. 
+Create a file named with "test.req", with content. 
 
-1. Press `Command+Shift+P`, type int "Install Package" and press `Enter`.
-2. Type in "Http Unit" and press `Enter`.
-3. That is all you need to do. Enjoy!
-
-*Alternative Way*:
-
-Press Ctrl+`
-Copy the following code, parst and press enter.
-
-```python
-import urllib.request,os,hashlib,tempfile,zipfile,shutil; version = "1.1.3"; name = "HttpUnit"; url = "https://github.com/gaohuia/HttpUnit/archive/v%s.zip" % (version); pp = sublime.packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen(url).read(); io = tempfile.TemporaryFile(); io.write(by); temp_dir = tempfile.gettempdir(); z = zipfile.ZipFile(io); z.extractall(temp_dir); shutil.copytree(temp_dir + "/" + name + "-" + version, pp + "/" + name); io.close();
 ```
+GET https://www.google.com/
+```
+
+Save, press `Command+B` or `Ctrl+B` to run to send the request.
 
 ### Send Simple Request
 
@@ -109,3 +102,21 @@ Example:
 ### HOT KEYS
 
 Just press `Command+B` (For Mac) or `Ctrl+B` (For Win) to run your script.
+
+
+### Install
+
+The simplest way to install HttpUnit would be through the `Package Control`. 
+
+1. Press `Command+Shift+P`, type int "Install Package" and press `Enter`.
+2. Type in "Http Unit" and press `Enter`.
+3. That is all you need to do. Enjoy!
+
+*Alternative Way*:
+
+Press Ctrl+`
+Copy the following code, parst and press enter.
+
+```python
+import urllib.request,os,hashlib,tempfile,zipfile,shutil; version = "1.1.3"; name = "HttpUnit"; url = "https://github.com/gaohuia/HttpUnit/archive/v%s.zip" % (version); pp = sublime.packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen(url).read(); io = tempfile.TemporaryFile(); io.write(by); temp_dir = tempfile.gettempdir(); z = zipfile.ZipFile(io); z.extractall(temp_dir); shutil.copytree(temp_dir + "/" + name + "-" + version, pp + "/" + name); io.close();
+```
