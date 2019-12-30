@@ -1,5 +1,5 @@
 # HttpUnit
-An alternate of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/HttpUnit/wiki) here.
+An alternate of PostMan. No gui, but pretty easy to send http requests in sublime. We can find the [Documentation](https://github.com/gaohuia/HttpUnit/wiki) here. Please report any issue [here](https://github.com/gaohuia/HttpUnit/issues).
 
 ### Features
 
